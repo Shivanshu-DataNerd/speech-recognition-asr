@@ -1,24 +1,43 @@
+# src/dataset.py
+
 import os
 import pandas as pd
 
 class CommonVoiceAUSDataset:
     """
     Dataset loader for Mozilla Common Voice v24 (English – Australian).
+    Supports CSV-based metadata as provided by Data Collective exports.
     """
 
     def __init__(self, root_dir: str):
-        """
-        Args:
-            root_dir: path to commonvoice_en_au directory
-        """
         self.root_dir = root_dir
         self.audio_dir = os.path.join(root_dir, "audio_files")
-        self.metadata_path = os.path.join(root_dir, "metadata.xlsx")
 
-        if not os.path.exists(self.metadata_path):
-            raise FileNotFoundError("metadata.xlsx not found")
+        # Metadata files
+        self.metadata_csv = os.path.join(root_dir, "metadata.csv")
 
-        self.df = pd.read_excel(self.metadata_path)
+        if not os.path.exists(self.metadata_csv):
+            raise FileNotFoundError("metadata.csv not found in dataset directory")
+
+        self.df = self._load_metadata()
+
+    def _load_metadata(self):
+        df = pd.read_csv(self.metadata_csv)
+
+        # Basic sanity checks (important for research)
+        required_cols = {
+            "client_id",
+            "path",
+            "sentence",
+            "accents",
+            "duration_ms"
+        }
+
+        missing = required_cols - set(df.columns)
+        if missing:
+            raise ValueError(f"Missing required columns: {missing}")
+
+        return df
 
     def __len__(self):
         return len(self.df)
@@ -27,14 +46,16 @@ class CommonVoiceAUSDataset:
         row = self.df.iloc[idx]
 
         audio_path = os.path.join(self.audio_dir, row["path"])
-        text = row["sentence"]
+
+        if not os.path.exists(audio_path):
+            raise FileNotFoundError(f"Audio file not found: {audio_path}")
 
         return {
             "audio_path": audio_path,
-            "text": text,
+            "text": row["sentence"],
             "speaker_id": row["client_id"],
-            "accent": row["accents"],
-            "gender": row["gender"],
-            "age": row["age"],
-            "duration_ms": row["duration_ms"]
+            "accent": row.get("accents"),
+            "gender": row.get("gender"),
+            "age": row.get("age"),
+            "duration_ms": row.get("duration_ms")
         }
