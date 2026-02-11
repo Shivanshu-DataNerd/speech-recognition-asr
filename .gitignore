@@ -2,5 +2,6 @@ audio_files
 metadata.csv
 splits.csv
 .venv
+venv
 __pycache__
 graphs
