@@ -43,12 +43,31 @@ pip install -r requirements.txt
 # --------------------------------------------------
 # Step 5: Run ASR training notebook (headless)
 # --------------------------------------------------
-echo "[5/6] Running ASR training notebook..."
+# --------------------------------------------------
+# Step 5: Run All Notebooks Sequentially
+# --------------------------------------------------
 
-jupyter nbconvert \
-    --to notebook \
-    --execute notebooks/05_asr_training.ipynb \
-    --output executed_05_asr_training.ipynb
+echo "[5/6] Running all notebooks..."
+
+NOTEBOOKS=(
+    "01_dataset_exploration.ipynb"
+    "02_logmel_extraction.ipynb"
+    "03_text_processing.ipynb"
+    "04_ctc_theory_and_loss.ipynb"
+    "05_asr_training.ipynb"
+)
+
+for nb in "${NOTEBOOKS[@]}"; do
+    echo "Executing $nb ..."
+    
+    jupyter nbconvert \
+        --to notebook \
+        --execute notebooks/$nb \
+        --output executed_$nb
+
+    echo "$nb completed."
+done
+
 
 # --------------------------------------------------
 # Step 6: Finish
