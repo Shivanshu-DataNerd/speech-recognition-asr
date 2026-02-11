@@ -91,3 +91,18 @@ def pad_log_mel(log_mel: np.ndarray, max_frames: int):
     mask[:length] = 1.0
 
     return padded, mask
+
+def spec_augment(log_mel, freq_mask_param=15, time_mask_param=30):
+    augmented = log_mel.copy()
+
+    # Frequency masking
+    f = np.random.randint(0, freq_mask_param)
+    f0 = np.random.randint(0, augmented.shape[0] - f)
+    augmented[f0:f0+f, :] = 0
+
+    # Time masking
+    t = np.random.randint(0, time_mask_param)
+    t0 = np.random.randint(0, augmented.shape[1] - t)
+    augmented[:, t0:t0+t] = 0
+
+    return augmented
