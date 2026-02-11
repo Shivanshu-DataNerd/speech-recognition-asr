@@ -1,4 +1,6 @@
-data
+audio_files
+metadata.csv
+splits.csv
 .venv
 __pycache__
 graphs
